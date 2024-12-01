@@ -103,7 +103,7 @@ We follow a convention-based approach for loading providers, which relies on str
 - **OpenAI**:
   The provider class should be defined as:
   ```python
-  class OpenaiProvider(BaseProvider)
+  class OpenaiChatProvider(BaseProvider)
   ```
   in providers/openai_provider.py
 

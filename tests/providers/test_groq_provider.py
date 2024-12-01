@@ -2,7 +2,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from aisuite.providers.groq_provider import GroqProvider
+from aisuite.providers.groq_provider import GroqChatProvider
 
 
 @pytest.fixture(autouse=True)
@@ -20,7 +20,7 @@ def test_groq_provider():
     chosen_temperature = 0.75
     response_text_content = "mocked-text-response-from-model"
 
-    provider = GroqProvider()
+    provider = GroqChatProvider()
     mock_response = MagicMock()
     mock_response.choices = [MagicMock()]
     mock_response.choices[0].message = MagicMock()

@@ -1,4 +1,4 @@
-from .provider import ProviderFactory
+from aisuite.provider import ProviderFactory
 
 
 class Client:

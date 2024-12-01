@@ -5,13 +5,12 @@ import os
 import vertexai
 from vertexai.generative_models import GenerativeModel, GenerationConfig
 
-from aisuite.framework import ProviderInterface, ChatCompletionResponse
+from aisuite.framework import ChatProviderInterface
+from aisuite.providers.google_provider_shared import transform_roles, normalize_response, convert_openai_to_google_ai
+from aisuite.framework.chat_provider import DEFAULT_TEMPERATURE
 
 
-DEFAULT_TEMPERATURE = 0.7
-
-
-class GoogleProvider(ProviderInterface):
+class GoogleProvider(ChatProviderInterface):
     """Implements the ProviderInterface for interacting with Google's Vertex AI."""
 
     def __init__(self, **config):
@@ -29,8 +28,12 @@ class GoogleProvider(ProviderInterface):
                 "Please refer to the setup guide: /guides/google.md."
             )
 
-        vertexai.init(project=self.project_id, location=self.location)
+        vertexai.init(project=self.project_id, location=self.location, credentials=self.app_creds_path)
 
+
+class GooglevertexChatProvider(GoogleProvider):
+
+    # TODO: could this return a function with closure containing the chat instead?
     def chat_completions_create(self, model, messages, **kwargs):
         """Request chat completions from the Google AI API.
 
@@ -50,10 +53,10 @@ class GoogleProvider(ProviderInterface):
         temperature = kwargs.get("temperature", DEFAULT_TEMPERATURE)
 
         # Transform the roles in the messages
-        transformed_messages = self.transform_roles(messages)
+        transformed_messages = transform_roles(messages)
 
         # Convert the messages to the format expected Google
-        final_message_history = self.convert_openai_to_vertex_ai(
+        final_message_history = convert_openai_to_google_ai(
             transformed_messages[:-1]
         )
 
@@ -70,36 +73,5 @@ class GoogleProvider(ProviderInterface):
         response = chat.send_message(last_message)
 
         # Convert the response to the format expected by the OpenAI API
-        return self.normalize_response(response)
+        return normalize_response(response)
 
-    def convert_openai_to_vertex_ai(self, messages):
-        """Convert OpenAI messages to Google AI messages."""
-        from vertexai.generative_models import Content, Part
-
-        history = []
-        for message in messages:
-            role = message["role"]
-            content = message["content"]
-            parts = [Part.from_text(content)]
-            history.append(Content(role=role, parts=parts))
-        return history
-
-    def transform_roles(self, messages):
-        """Transform the roles in the messages based on the provided transformations."""
-        openai_roles_to_google_roles = {
-            "system": "user",
-            "assistant": "model",
-        }
-
-        for message in messages:
-            if role := openai_roles_to_google_roles.get(message["role"], None):
-                message["role"] = role
-        return messages
-
-    def normalize_response(self, response):
-        """Normalize the response from Google AI to match OpenAI's response format."""
-        openai_response = ChatCompletionResponse()
-        openai_response.choices[0].message.content = (
-            response.candidates[0].content.parts[0].text
-        )
-        return openai_response

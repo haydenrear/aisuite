@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from aisuite.providers.ollama_provider import OllamaProvider
+from aisuite.providers.ollama_provider import OllamaChatProvider
 
 
 @pytest.fixture(autouse=True)
@@ -18,7 +18,7 @@ def test_completion():
     chosen_temperature = 0.77
     response_text_content = "mocked-text-response-from-ollama-model"
 
-    ollama = OllamaProvider()
+    ollama = OllamaChatProvider()
     mock_response = {"message": {"content": response_text_content}}
 
     with patch(
