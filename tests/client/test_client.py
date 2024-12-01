@@ -4,21 +4,23 @@ from aisuite import Client
 
 
 class TestClient(unittest.TestCase):
-    @patch("aisuite.providers.mistral_provider.MistralProvider.chat_completions_create")
-    @patch("aisuite.providers.groq_provider.GroqProvider.chat_completions_create")
-    @patch("aisuite.providers.openai_provider.OpenaiProvider.chat_completions_create")
-    @patch("aisuite.providers.aws_provider.AwsProvider.chat_completions_create")
-    @patch("aisuite.providers.azure_provider.AzureProvider.chat_completions_create")
+    @patch("aisuite.providers.mistral_provider.MistralChatProvider.chat_completions_create")
+    @patch("aisuite.providers.groq_provider.GroqChatProvider.chat_completions_create")
+    @patch("aisuite.providers.openai_provider.OpenaiChatProvider.chat_completions_create")
+    @patch("aisuite.providers.aws_provider.AwsChatProvider.chat_completions_create")
+    @patch("aisuite.providers.azure_provider.AzureChatProvider.chat_completions_create")
     @patch(
-        "aisuite.providers.anthropic_provider.AnthropicProvider.chat_completions_create"
+        "aisuite.providers.anthropic_provider.AnthropicChatProvider.chat_completions_create"
     )
-    @patch("aisuite.providers.google_provider.GoogleProvider.chat_completions_create")
+    @patch("aisuite.providers.googlevertex_provider.GooglevertexChatProvider.chat_completions_create")
+    @patch("aisuite.providers.googlegenai_provider.GooglegenaiChatProvider.chat_completions_create")
     @patch(
-        "aisuite.providers.fireworks_provider.FireworksProvider.chat_completions_create"
+        "aisuite.providers.fireworks_provider.FireworksChatProvider.chat_completions_create"
     )
     def test_client_chat_completions(
         self,
         mock_fireworks,
+        mock_gen_ai,
         mock_google,
         mock_anthropic,
         mock_azure,
@@ -36,6 +38,7 @@ class TestClient(unittest.TestCase):
         mock_mistral.return_value = "Mistral Response"
         mock_google.return_value = "Google Response"
         mock_fireworks.return_value = "Fireworks Response"
+        mock_gen_ai.return_value = "Google Response"
 
         # Provider configurations
         provider_configs = {
@@ -56,10 +59,13 @@ class TestClient(unittest.TestCase):
             "mistral": {
                 "api_key": "mistral-api-key",
             },
-            "google": {
+            "googlevertex": {
                 "project_id": "test_google_project_id",
                 "region": "us-west4",
                 "application_credentials": "test_google_application_credentials",
+            },
+            "googlegenai": {
+                "api_key": "test_google_api_key",
             },
             "fireworks": {
                 "api_key": "fireworks-api-key",
@@ -119,12 +125,19 @@ class TestClient(unittest.TestCase):
         mock_mistral.assert_called_once()
 
         # Test Google model
-        google_model = "google" + ":" + "google-model"
+        google_model = "googlevertex" + ":" + "google-model"
         google_response = client.chat.completions.create(
             google_model, messages=messages
         )
         self.assertEqual(google_response, "Google Response")
         mock_google.assert_called_once()
+
+        google_gen_ai_model = "googlegenai" + ":" + "google-model"
+        google_response = client.chat.completions.create(
+            google_gen_ai_model, messages=messages
+        )
+        self.assertEqual(google_response, "Google Response")
+        mock_gen_ai.assert_called_once()
 
         # Test Fireworks model
         fireworks_model = "fireworks" + ":" + "fireworks-model"
@@ -155,7 +168,7 @@ class TestClient(unittest.TestCase):
             str(context.exception),
         )
 
-    @patch("aisuite.providers.openai_provider.OpenaiProvider.chat_completions_create")
+    @patch("aisuite.providers.openai_provider.OpenaiChatProvider.chat_completions_create")
     def test_invalid_model_format_in_create(self, mock_openai):
         # Valid provider configurations
         provider_configs = {

@@ -1,10 +1,11 @@
 import os
 import httpx
-from aisuite.provider import Provider, LLMError
+from aisuite.framework.chat_provider import ChatProvider
+from aisuite.provider import LLMError
 from aisuite.framework import ChatCompletionResponse
 
 
-class FireworksProvider(Provider):
+class FireworksChatProvider(ChatProvider):
     """
     Fireworks AI Provider using httpx for direct API calls.
     """

@@ -1,7 +1,13 @@
-import pytest
+import os
 from unittest.mock import patch, MagicMock
-from aisuite.providers.google_provider import GoogleProvider
+
+import pytest
+import vertexai
+from google.auth import environment_vars
 from vertexai.generative_models import Content, Part
+
+from aisuite.providers.googlevertex_provider import GooglevertexChatProvider as GoogleChatProvider
+from aisuite.providers.google_provider_shared import convert_openai_to_google_ai, transform_roles
 
 
 @pytest.fixture(autouse=True)
@@ -16,7 +22,7 @@ def test_missing_env_vars():
     """Test that an error is raised if required environment variables are missing."""
     with patch.dict("os.environ", {}, clear=True):
         with pytest.raises(EnvironmentError) as exc_info:
-            GoogleProvider()
+            GoogleChatProvider()
         assert "Missing one or more required Google environment variables" in str(
             exc_info.value
         )
@@ -30,13 +36,13 @@ def test_vertex_interface():
     selected_model = "our-favorite-model"
     response_text_content = "mocked-text-response-from-model"
 
-    interface = GoogleProvider()
+    interface = GoogleChatProvider()
     mock_response = MagicMock()
     mock_response.candidates = [MagicMock()]
     mock_response.candidates[0].content.parts[0].text = response_text_content
 
     with patch(
-        "aisuite.providers.google_provider.GenerativeModel"
+        "aisuite.providers.googlevertex_provider.GenerativeModel"
     ) as mock_generative_model:
         mock_model = MagicMock()
         mock_generative_model.return_value = mock_model
@@ -70,9 +76,8 @@ def test_vertex_interface():
 
 
 def test_convert_openai_to_vertex_ai():
-    interface = GoogleProvider()
     message_history = [{"role": "user", "content": "Hello!"}]
-    result = interface.convert_openai_to_vertex_ai(message_history)
+    result = convert_openai_to_google_ai(message_history)
     assert isinstance(result[0], Content)
     assert result[0].role == "user"
     assert len(result[0].parts) == 1
@@ -81,7 +86,7 @@ def test_convert_openai_to_vertex_ai():
 
 
 def test_transform_roles():
-    interface = GoogleProvider()
+    interface = GoogleChatProvider()
 
     messages = [
         {"role": "system", "content": "Google: system message = 1st user message."},
@@ -95,6 +100,19 @@ def test_transform_roles():
         {"role": "model", "content": "Assistant message 1."},
     ]
 
-    result = interface.transform_roles(messages)
+    result = transform_roles(messages)
 
     assert result == expected_output
+
+
+# def test_send_embedding_model():
+#     from vertexai.language_models import TextEmbeddingModel
+#     os.environ[environment_vars.CREDENTIALS] = "/Users/hayde/IdeaProjects/drools/model_server/gen-lang-client-0937262914-9e6d0b9d9342.json"
+#     vertexai.init(project="gen-lang-client-0937262914")
+#     model = TextEmbeddingModel.from_pretrained(
+#         "text-embedding-005"
+#     )
+#
+#     kwargs = dict(output_dimensionality=256)
+#
+#     print(model.get_embeddings(['hello'], **kwargs))

@@ -1,10 +1,11 @@
 import os
 import httpx
-from aisuite.provider import Provider, LLMError
+from aisuite.framework.chat_provider import ChatProvider
+from aisuite.provider import LLMError
 from aisuite.framework import ChatCompletionResponse
 
 
-class OllamaProvider(Provider):
+class OllamaChatProvider(ChatProvider):
     """
     Ollama Provider that makes HTTP calls instead of using SDK.
     It uses the /api/chat endpoint.

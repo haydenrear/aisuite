@@ -1,9 +1,10 @@
 import openai
 import os
-from aisuite.provider import Provider, LLMError
+from aisuite.framework.chat_provider import ChatProvider
+from aisuite.provider import LLMError
 
 
-class OpenaiProvider(Provider):
+class OpenaiChatProvider(ChatProvider):
     def __init__(self, **config):
         """
         Initialize the OpenAI provider with the given configuration.
@@ -26,10 +27,9 @@ class OpenaiProvider(Provider):
     def chat_completions_create(self, model, messages, **kwargs):
         # Any exception raised by OpenAI will be returned to the caller.
         # Maybe we should catch them and raise a custom LLMError.
-        response = self.client.chat.completions.create(
+        return self.client.chat.completions.create(
             model=model,
             messages=messages,
             **kwargs  # Pass any additional arguments to the OpenAI API
         )
 
-        return response

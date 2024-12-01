@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
 
-from aisuite.providers.mistral_provider import MistralProvider
+from aisuite.providers.mistral_provider import MistralChatProvider
 
 
 @pytest.fixture(autouse=True)
@@ -19,7 +19,7 @@ def test_mistral_provider():
     chosen_temperature = 0.75
     response_text_content = "mocked-text-response-from-model"
 
-    provider = MistralProvider()
+    provider = MistralChatProvider()
     mock_response = MagicMock()
     mock_response.choices = [MagicMock()]
     mock_response.choices[0].message = MagicMock()
