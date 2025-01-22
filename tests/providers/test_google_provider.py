@@ -107,8 +107,8 @@ def test_transform_roles():
 
 # def test_send_embedding_model():
 #     from vertexai.language_models import TextEmbeddingModel
-#     os.environ[environment_vars.CREDENTIALS] = "/Users/hayde/IdeaProjects/drools/model_server/gen-lang-client-0937262914-9e6d0b9d9342.json"
-#     vertexai.init(project="gen-lang-client-0937262914")
+#     os.environ[environment_vars.CREDENTIALS] = "/Users/hayde/IdeaProjects/drools/model_server/gen-lang-client-0937262914-df36823842a7.json"
+#     vertexai.init(project="gen-lang-client-0937262914", api_key="AIzaSyCd1CapXV3Pyu-XNdbfOW1eNtsZXkeyAVM")
 #     model = TextEmbeddingModel.from_pretrained(
 #         "text-embedding-005"
 #     )
