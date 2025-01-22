@@ -87,5 +87,5 @@ class GooglegenaiEmbeddingProvider(GoogleGenAiProvider, EmbeddingProviderInterfa
             NotImplementedError: If this method has not been implemented by a subclass.
 
         """
-        return genai.embed_content(model, to_embed,
+        return genai.embed_content(model=model, content=to_embed,
                                    output_dimensionality=kwargs.get("output_dimensionality", DEFAULT_EMBEDDING_DIM))
