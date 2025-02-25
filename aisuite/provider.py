@@ -15,6 +15,8 @@ from aisuite.framework.provider_interface import Provider, ProviderInterface
 class ProviderType(enum.Enum):
     EMBEDDING = 'Embedding'
     CHAT = 'Chat'
+    VALIDATION = 'Validation'
+    RERANK = 'Rerank'
 
 class LLMError(Exception):
     """Custom exception for LLM errors."""
@@ -68,6 +70,14 @@ class ProviderFactory:
         # Convert provider_key to the expected module and class names
         return typing.cast(typing.Union[EmbeddingProviderInterface, EmbeddingProvider],
                            cls.create_provider(provider_key, config, ProviderType.EMBEDDING))
+
+    @classmethod
+    def create_rerank_provider(cls, provider_key, config) \
+            -> typing.Union[EmbeddingProviderInterface, EmbeddingProvider]:
+        """Dynamically load and create an instance of a provider based on the naming convention."""
+        # Convert provider_key to the expected module and class names
+        return typing.cast(typing.Union[EmbeddingProviderInterface, EmbeddingProvider],
+                           cls.create_provider(provider_key, config, ProviderType.RERANK))
 
     @classmethod
     @functools.cache

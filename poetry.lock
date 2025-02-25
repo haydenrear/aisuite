@@ -1577,6 +1577,26 @@ google-auth = ">=1.25.0,<3.0dev"
 grpc = ["grpcio (>=1.38.0,<2.0dev)", "grpcio-status (>=1.38.0,<2.0.dev0)"]
 
 [[package]]
+name = "google-cloud-discoveryengine"
+version = "0.13.6"
+description = "Google Cloud Discoveryengine API client library"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "google_cloud_discoveryengine-0.13.6-py3-none-any.whl", hash = "sha256:5c67ca0d5d14ee509756e97ab59ba4b59003a5173d38b427e4019763ec521503"},
+    {file = "google_cloud_discoveryengine-0.13.6.tar.gz", hash = "sha256:f1c942d51c87d585947f56647c8768faa0ec07bb57af06224c23eb4475f7d095"},
+]
+
+[package.dependencies]
+google-api-core = {version = ">=1.34.1,<2.0.dev0 || >=2.11.dev0,<3.0.0dev", extras = ["grpc"]}
+google-auth = ">=2.14.1,<2.24.0 || >2.24.0,<2.25.0 || >2.25.0,<3.0.0dev"
+proto-plus = [
+    {version = ">=1.22.3,<2.0.0dev", markers = "python_version < \"3.13\""},
+    {version = ">=1.25.0,<2.0.0dev", markers = "python_version >= \"3.13\""},
+]
+protobuf = ">=3.20.2,<4.21.0 || >4.21.0,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4.21.4 || >4.21.4,<4.21.5 || >4.21.5,<6.0.0dev"
+
+[[package]]
 name = "google-cloud-resource-manager"
 version = "1.13.1"
 description = "Google Cloud Resource Manager API client library"
@@ -5083,6 +5103,28 @@ requests = ">=2.0.0"
 rsa = ["oauthlib[signedtoken] (>=3.0.0)"]
 
 [[package]]
+name = "rerankers"
+version = "0.8.0"
+description = "A unified API for various document re-ranking models."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "rerankers-0.8.0-py3-none-any.whl", hash = "sha256:47117d33ad0474b88569269f454ad1be1e2c252ebd230046d6b9ceff99875a3c"},
+    {file = "rerankers-0.8.0.tar.gz", hash = "sha256:395ea32a62f24356e946882e2001205e3347d1f1bef8ae66beacc5179a729c14"},
+]
+
+[package.extras]
+all = ["accelerate (>=0.26.0)", "flash-attn", "flashrank", "litellm", "nmslib-metabrainz", "peft (>=0.13.0)", "pillow", "protobuf", "rank-llm", "requests", "sentencepiece", "torch", "transformers (>=4.45.0)"]
+api = ["requests"]
+dev = ["ipyprogress", "ipython", "ir_datasets", "isort", "pytest", "ranx", "ruff", "srsly"]
+flashrank = ["flashrank"]
+gpt = ["litellm"]
+llmlayerwise = ["flash-attn", "protobuf", "sentencepiece", "torch", "transformers (>=4.45.0)"]
+monovlm = ["accelerate (>=0.26.0)", "flash-attn", "peft (>=0.13.0)", "pillow", "protobuf", "sentencepiece", "torch", "transformers (>=4.45.0)"]
+rankllm = ["nmslib-metabrainz", "rank-llm"]
+transformers = ["protobuf", "sentencepiece", "torch", "transformers (>=4.45.0)"]
+
+[[package]]
 name = "rfc3339-validator"
 version = "0.1.4"
 description = "A pure python RFC3339 validator"
@@ -6927,4 +6969,4 @@ openai = ["openai"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "0cad6028bbb32d43c1517aa0c22781be559e502f0b9985e01b78192831b5fe31"
+content-hash = "d5f75fef097388a823b9428a10cb5e54a6e66bee59dbdda2401b267b8bf473e1"

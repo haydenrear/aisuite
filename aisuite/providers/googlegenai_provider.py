@@ -1,13 +1,12 @@
 """The interface to Google's Vertex AI."""
-
 import os
+
 import google.generativeai as genai
 from google.generativeai.types import text_types
 
-from aisuite.framework import ChatProviderInterface
+from aisuite.framework.chat_provider import DEFAULT_TEMPERATURE, ChatProvider
 from aisuite.framework.embedding_provider import EmbeddingProviderInterface, DEFAULT_EMBEDDING_DIM
 from aisuite.providers.google_provider_shared import transform_roles, normalize_response, convert_openai_to_google_ai
-from aisuite.framework.chat_provider import DEFAULT_TEMPERATURE, ChatProvider
 
 
 class GoogleGenAiProvider:
@@ -89,3 +88,4 @@ class GooglegenaiEmbeddingProvider(GoogleGenAiProvider, EmbeddingProviderInterfa
         """
         return genai.embed_content(model=model, content=to_embed,
                                    output_dimensionality=kwargs.get("output_dimensionality", DEFAULT_EMBEDDING_DIM))
+
