@@ -13,9 +13,8 @@ from rerankers.utils import (
 
 from aisuite.framework.chat_provider import ChatProvider
 from aisuite.framework.embedding_provider import DEFAULT_EMBEDDING_DIM
-from aisuite.framework.rerank_provider import RerankProviderInterface
+from aisuite.framework.rerank_provider import RerankProviderInterface, AiSuiteReranker
 from aisuite.framework.rerank_util import create_ranking_records
-from aisuite.providers.googlegenai_provider import GoogleGenAiProvider
 
 GOOGLE_APP_CRED_KEY = "GOOGLE_APPLICATION_CREDENTIALS"
 
@@ -52,8 +51,7 @@ class GooglecloudChatProvider(GoogleCloudProvider, ChatProvider):
 
         raise NotImplementedError("Chat provider not implemented for google cloud.")
 
-
-class GooglecloudReranker(rerankers.reranker.BaseRanker):
+class GooglecloudReranker(AiSuiteReranker):
 
     def __init__(self, model: str, project_id: str, application_credential: str, client: Optional[discoveryengine.RankServiceClient] = None, **kwargs):
         if GOOGLE_APP_CRED_KEY not in os.environ.keys():
@@ -74,10 +72,8 @@ class GooglecloudReranker(rerankers.reranker.BaseRanker):
 
     def do_rank(self,
                 query: str,
-                docs: Union[str, List[str], rerankers.results.Document, List[rerankers.results.Document]],
-                doc_ids: Optional[Union[List[str], List[int]]] = None,
-                metadata: Optional[list[dict]] = None):
-        records = create_ranking_records(docs, doc_ids, metadata)
+                docs: Union[str, List[str], rerankers.results.Document, List[rerankers.results.Document]]):
+        records = create_ranking_records(docs)
         return discoveryengine.RankRequest(
             ranking_config=self.ranking_config,
             model=self.model,
@@ -85,36 +81,31 @@ class GooglecloudReranker(rerankers.reranker.BaseRanker):
             query=query,
             records=records)
 
-    def __call__(self,
-                 query: str,
-                 docs: Union[str, List[str], rerankers.results.Document, List[rerankers.results.Document]],
-                 doc_ids: Optional[Union[List[str], List[int]]] = None,
-                 metadata: Optional[List[dict]] = None):
-        gen_ai_rerank_call = self.gen_ai(query, docs, doc_ids)
-        return gen_ai_rerank_call
+    def __call__(self, data: dict[str, ...]):
+        query = data['query']
+        docs = data['docs']
+        return self.rank(query, docs)
 
 
     def rank(
             self,
             query: str,
             docs: Union[str, List[str], rerankers.results.Document, List[rerankers.results.Document]],
-            doc_ids: Optional[Union[List[str], List[int]]] = None,
-            metadata: Optional[List[dict]] = None
     ) -> rerankers.results.RankedResults:
         """
         Ranks a list of documents based on their relevance to the query.
         """
-        docs = prep_docs(docs, doc_ids, metadata)
-        scores = self.gen_ai(query, docs, doc_ids, metadata)
-        reranked = self._parse_ranked_results(query, scores)
+        docs = prep_docs(docs, None, None)
+        ranked_documents = self.gen_ai(query, docs)
+        reranked = self._parse_ranked_results(query, ranked_documents)
         return reranked
 
     @staticmethod
     def _parse_ranked_results(query, scores):
         reranked = rerankers.results.RankedResults([
-            rerankers.results.Result(Document(next_doc.content, next_doc.id, None, "text"), None, i)
-            for i, next_doc in enumerate(scores.records)
-        ],
+                rerankers.results.Result(Document(next_doc.content, next_doc.id, None, "text"), None, i)
+                for i, next_doc in enumerate(scores.records)
+            ],
             query,
             False)
         return reranked
@@ -132,7 +123,7 @@ class GooglecloudRerankProvider(GoogleCloudProvider, RerankProviderInterface):
 
 
     """Defines the expected behavior for provider-specific interfaces."""
-    def rerank_create(self, model: str, output_dimensionality=DEFAULT_EMBEDDING_DIM, **kwargs) -> rerankers.reranker.BaseRanker:
+    def rerank_create(self, model: str, output_dimensionality=DEFAULT_EMBEDDING_DIM, **kwargs) -> AiSuiteReranker:
         """Create an embedding using the specified messages, model, and temperature.
 
         This method must be implemented by subclasses to perform completions.

@@ -1,4 +1,5 @@
 import logging
+import typing
 from typing import List, Optional, Union
 
 import rerankers.results
@@ -12,21 +13,18 @@ except:
     log_info = lambda x: logging.info(f"INFO: {x}")
     log_warn = lambda x: logging.warning(f"WARN: {x}")
 
-
 def create_ranking_records(
         docs: Union[str, List[str], rerankers.results.Document, List[rerankers.results.Document]],
-        doc_ids: Optional[Union[List[str], List[int]]],
-        metadata
 ) -> list[RankingRecord]:
     if isinstance(docs, str) or isinstance(docs, rerankers.results.Document):
-        record = parse_single_ranking_record(docs, metadata, doc_ids)
+        record = parse_single_ranking_record(docs)
         if record:
             return [record]
         else:
             _log_no_ranking_records()
             return []
     elif isinstance(docs, List):
-        ranking_records = [parse_to_ranking_record(d, metadata, doc_ids, i, len(docs))
+        ranking_records = [parse_to_ranking_record(d, i)
                            for i, d in  enumerate(docs)]
         ranking_records = [record for record in filter(lambda x: x is not None, ranking_records)]
         if len(ranking_records) == 0:
@@ -41,7 +39,7 @@ def _log_no_ranking_records():
     log_warn("Did not find any valid ranking records")
 
 
-def create_ranking_record(doc_id: str, text: str, metadata: dict[str, ...]):
+def create_ranking_record(doc_id: str, text: str, metadata: typing.Optional[dict[str, ...]]):
     title = key_from_metadata_or_none(metadata, "title")
     if not text and not title:
         log_warn("Rerank must be provided with text or title.")
@@ -63,13 +61,8 @@ def key_from_metadata_or_none(metadata, key: str):
 
 def parse_single_ranking_record(
         d: Union[str, rerankers.results.Document],
-        metadata: dict[str, ...],
-        doc_ids: Optional[Union[List[str], List[int]]]
 ) -> RankingRecord:
-    if len(doc_ids) >= 1:
-        return create_ranking_record(str(doc_ids[0]), get_doc_text(d), metadata)
-    else:
-        return create_ranking_record("1", get_doc_text(d), metadata)
+    return create_ranking_record("1", get_doc_text(d), d.metadata)
 
 
 def get_doc_text(d: Union[str, rerankers.results.Document]) -> str:
@@ -84,19 +77,22 @@ def get_doc_text(d: Union[str, rerankers.results.Document]) -> str:
 
 def parse_to_ranking_record(
         d: Union[str, rerankers.results.Document],
-        metadata: dict[str, ...],
-        doc_ids: Optional[Union[List[str], List[int]]],
-        i: int,
-        docs_len: int
+        i: int
 ) -> RankingRecord:
     if isinstance(d, rerankers.results.Document):
-        return create_ranking_record(get_doc_id(doc_ids, docs_len, i), d.text, metadata)
+        return create_ranking_record(get_doc_id(i), get_text(d.text), d.metadata)
     else:
-        return create_ranking_record(get_doc_id(doc_ids, docs_len, i), d, metadata)
+        return create_ranking_record(get_doc_id(i), get_text(d), None)
 
+def get_text(d: Union[str, rerankers.results.Document]):
+    if isinstance(d, str):
+        return  d
+    elif isinstance(d, dict):
+        if 'text' in d.keys():
+            return get_text(d['text'])
+    elif hasattr(d, 'text'):
+        d = getattr(d, 'text')
+        return get_text(d)
 
-def get_doc_id(doc_ids, docs_len, i):
-    if doc_ids and len(doc_ids) >= docs_len and doc_ids[i]:
-        return str(doc_ids[i])
-    else:
-        return str(i)
+def get_doc_id(i):
+    return str(i)

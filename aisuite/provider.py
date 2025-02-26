@@ -10,6 +10,7 @@ from aisuite.framework.chat_provider import ChatProviderInterface
 from aisuite.framework.chat_provider import ChatProvider
 from aisuite.framework.embedding_provider import EmbeddingProviderInterface, EmbeddingProvider
 from aisuite.framework.provider_interface import Provider, ProviderInterface
+from aisuite.framework.rerank_provider import RerankProviderInterface, RerankProvider
 
 
 class ProviderType(enum.Enum):
@@ -73,10 +74,10 @@ class ProviderFactory:
 
     @classmethod
     def create_rerank_provider(cls, provider_key, config) \
-            -> typing.Union[EmbeddingProviderInterface, EmbeddingProvider]:
+            -> typing.Union[RerankProviderInterface, RerankProvider]:
         """Dynamically load and create an instance of a provider based on the naming convention."""
         # Convert provider_key to the expected module and class names
-        return typing.cast(typing.Union[EmbeddingProviderInterface, EmbeddingProvider],
+        return typing.cast(typing.Union[RerankProviderInterface, RerankProvider],
                            cls.create_provider(provider_key, config, ProviderType.RERANK))
 
     @classmethod
