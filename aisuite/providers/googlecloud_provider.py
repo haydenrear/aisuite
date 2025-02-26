@@ -55,14 +55,14 @@ class GooglecloudChatProvider(GoogleCloudProvider, ChatProvider):
 
 class GooglecloudReranker(rerankers.reranker.BaseRanker):
 
-    def __init__(self, model: str, project_id: str, application_credential: str, **kwargs):
+    def __init__(self, model: str, project_id: str, application_credential: str, client: Optional[discoveryengine.RankServiceClient] = None, **kwargs):
         if GOOGLE_APP_CRED_KEY not in os.environ.keys():
             os.environ[GOOGLE_APP_CRED_KEY] = application_credential
 
-        client = discoveryengine.RankServiceClient()
+        if not client:
+            client = discoveryengine.RankServiceClient()
 
         self.model = model
-
 
         self.ranking_config = client.ranking_config_path(
             project=project_id,
@@ -77,12 +77,13 @@ class GooglecloudReranker(rerankers.reranker.BaseRanker):
                 docs: Union[str, List[str], rerankers.results.Document, List[rerankers.results.Document]],
                 doc_ids: Optional[Union[List[str], List[int]]] = None,
                 metadata: Optional[list[dict]] = None):
+        records = create_ranking_records(docs, doc_ids, metadata)
         return discoveryengine.RankRequest(
             ranking_config=self.ranking_config,
             model=self.model,
-            top_n=len(docs) + 1,
+            top_n=len(docs),
             query=query,
-            records=create_ranking_records(docs, doc_ids, metadata))
+            records=records)
 
     def __call__(self,
                  query: str,
@@ -111,7 +112,7 @@ class GooglecloudReranker(rerankers.reranker.BaseRanker):
     @staticmethod
     def _parse_ranked_results(query, scores):
         reranked = rerankers.results.RankedResults([
-            rerankers.results.Result(Document(next_doc.content), None, i)
+            rerankers.results.Result(Document(next_doc.content, next_doc.id, None, "text"), None, i)
             for i, next_doc in enumerate(scores.records)
         ],
             query,
