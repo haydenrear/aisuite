@@ -1,3 +1,5 @@
+import google
+
 from aisuite.framework import ChatCompletionResponse
 
 
@@ -28,12 +30,11 @@ def convert_openai_to_google_ai(messages):
     if len(messages) == 0:
         return []
 
-    from vertexai.generative_models import Content, Part
+
 
     history = []
     for message in messages:
         role = message["role"]
         content = message["content"]
-        parts = [Part.from_text(content)]
-        history.append(Content(role=role, parts=parts))
+        history.append({'role': role, 'parts': [{'text': content}]})
     return history
