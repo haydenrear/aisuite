@@ -1,6 +1,7 @@
 """The interface to Google's Vertex AI."""
 
 import os
+import typing
 from typing import List, Optional, Union
 
 import google.generativeai as cloud
@@ -15,6 +16,7 @@ from aisuite.framework.chat_provider import ChatProvider
 from aisuite.framework.embedding_provider import DEFAULT_EMBEDDING_DIM
 from aisuite.framework.rerank_provider import RerankProviderInterface, AiSuiteReranker
 from aisuite.framework.rerank_util import create_ranking_records
+from aisuite.framework.tool_utils import SerializedTools
 
 GOOGLE_APP_CRED_KEY = "GOOGLE_APPLICATION_CREDENTIALS"
 
@@ -34,7 +36,7 @@ class GoogleCloudProvider:
 class GooglecloudChatProvider(GoogleCloudProvider, ChatProvider):
 
     # TODO: could this return a function with closure containing the chat instead?
-    def chat_completions_create(self, model, messages, tools=None, **kwargs):
+    def chat_completions_create(self, model, messages, tools: typing.Optional[SerializedTools]=None, **kwargs):
         """Request chat completions from the Google AI API.
 
         Args:

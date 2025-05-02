@@ -1,8 +1,10 @@
 import os
+import typing
 
 import boto3
 from aisuite.framework.chat_provider import ChatProvider
 from aisuite.framework import ChatCompletionResponse
+from aisuite.framework.tool_utils import SerializedTools
 
 
 class AwsChatProvider(ChatProvider):
@@ -52,7 +54,7 @@ class AwsChatProvider(ChatProvider):
         ][0]["text"]
         return norm_response
 
-    def chat_completions_create(self, model, messages, tools=None, **kwargs):
+    def chat_completions_create(self, model, messages, tools: typing.Optional[SerializedTools]=None, **kwargs):
         # Any exception raised by Anthropic will be returned to the caller.
         # Maybe we should catch them and raise a custom LLMError.
         # https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html

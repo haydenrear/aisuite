@@ -1,11 +1,13 @@
 """The interface to Google's Vertex AI."""
 
 import os
+import typing
 
 import vertexai
 from vertexai.generative_models import GenerativeModel, GenerationConfig
 
 from aisuite.framework import ChatProviderInterface
+from aisuite.framework.tool_utils import SerializedTools
 from aisuite.providers.google_provider_shared import transform_roles, normalize_response, convert_openai_to_google_ai
 from aisuite.framework.chat_provider import DEFAULT_TEMPERATURE
 
@@ -34,7 +36,7 @@ class GoogleProvider(ChatProviderInterface):
 class GooglevertexChatProvider(GoogleProvider):
 
     # TODO: could this return a function with closure containing the chat instead?
-    def chat_completions_create(self, model, messages, tools=None, **kwargs):
+    def chat_completions_create(self, model, messages, tools: typing.Optional[SerializedTools]=None, **kwargs):
         """Request chat completions from the Google AI API.
 
         Args:

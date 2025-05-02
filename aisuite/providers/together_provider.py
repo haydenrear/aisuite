@@ -1,8 +1,11 @@
 import os
+import typing
+
 import httpx
 from aisuite.framework.chat_provider import ChatProvider
 from aisuite.provider import LLMError
 from aisuite.framework import ChatCompletionResponse
+from aisuite.framework.tool_utils import SerializedTools
 
 
 class TogetherChatProvider(ChatProvider):
@@ -26,7 +29,7 @@ class TogetherChatProvider(ChatProvider):
         # Optionally set a custom timeout (default to 30s)
         self.timeout = config.get("timeout", 30)
 
-    def chat_completions_create(self, model, messages, tools=None, **kwargs):
+    def chat_completions_create(self, model, messages, tools: typing.Optional[SerializedTools]=None, **kwargs):
         """
         Makes a request to the Fireworks AI chat completions endpoint using httpx.
         """

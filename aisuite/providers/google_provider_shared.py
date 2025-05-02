@@ -1,6 +1,7 @@
 import google
 
 from aisuite.framework import ChatCompletionResponse
+from aisuite.framework.tool_utils import SerializedTools
 
 
 def transform_roles(messages):
@@ -29,6 +30,8 @@ def convert_openai_to_google_ai(messages):
     """Convert OpenAI messages to Google AI messages using vertex maybe if it talks like a duck. Looks the same"""
     if len(messages) == 0:
         return []
+
+
 
     history = []
     for message in messages:

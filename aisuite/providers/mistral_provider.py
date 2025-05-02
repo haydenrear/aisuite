@@ -1,8 +1,10 @@
 import os
+import typing
 
 from mistralai import Mistral
 
 from aisuite.framework.chat_provider import ChatProvider
+from aisuite.framework.tool_utils import SerializedTools
 
 
 class MistralChatProvider(ChatProvider):
@@ -19,5 +21,5 @@ class MistralChatProvider(ChatProvider):
             )
         self.client = Mistral(**config)
 
-    def chat_completions_create(self, model, messages, tools=None, **kwargs):
+    def chat_completions_create(self, model, messages, tools: typing.Optional[SerializedTools]=None, **kwargs):
         return self.client.chat.complete(model=model, messages=messages, **kwargs)

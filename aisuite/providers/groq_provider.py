@@ -1,8 +1,10 @@
 import os
+import typing
 
 import groq
 
 from aisuite.framework.chat_provider import ChatProvider
+from aisuite.framework.tool_utils import SerializedTools
 
 
 class GroqChatProvider(ChatProvider):
@@ -19,7 +21,7 @@ class GroqChatProvider(ChatProvider):
             )
         self.client = groq.Groq(**config)
 
-    def chat_completions_create(self, model, messages, tools=None, **kwargs):
+    def chat_completions_create(self, model, messages, tools: typing.Optional[SerializedTools]=None, **kwargs):
         return self.client.chat.completions.create(
             model=model,
             messages=messages,

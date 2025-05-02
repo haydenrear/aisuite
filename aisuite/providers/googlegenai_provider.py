@@ -4,9 +4,11 @@ import typing
 
 import google.generativeai as genai
 from google.generativeai.types import text_types, ToolsType
+from langchain_core.tools import BaseTool
 
 from aisuite.framework.chat_provider import DEFAULT_TEMPERATURE, ChatProvider
 from aisuite.framework.embedding_provider import EmbeddingProviderInterface, DEFAULT_EMBEDDING_DIM
+from aisuite.framework.tool_utils import SerializedTools
 from aisuite.providers.google_provider_shared import transform_roles, normalize_response, convert_openai_to_google_ai
 
 
@@ -25,7 +27,8 @@ class GoogleGenAiProvider:
 class GooglegenaiChatProvider(GoogleGenAiProvider, ChatProvider):
 
     # TODO: could this return a function with closure containing the chat instead?
-    def chat_completions_create(self, model, messages, tools=None, **kwargs):
+    def chat_completions_create(self, model, messages,
+                                tools: typing.Optional[SerializedTools] = None, **kwargs):
         """Request chat completions from the Google AI API.
 
         Args:
@@ -48,8 +51,7 @@ class GooglegenaiChatProvider(GoogleGenAiProvider, ChatProvider):
 
         # Convert the messages to the format expected Google
         final_message_history = convert_openai_to_google_ai(
-            transformed_messages[:-1]
-        )
+            transformed_messages[:-1])
 
         # Get the last message from the transformed messages
         last_message = transformed_messages[-1]["content"]

@@ -1,6 +1,9 @@
+import typing
+
 import anthropic
 from aisuite.framework.chat_provider import ChatProvider
 from aisuite.framework import ChatCompletionResponse
+from aisuite.framework.tool_utils import SerializedTools
 
 # Define a constant for the default max_tokens value
 DEFAULT_MAX_TOKENS = 4096
@@ -15,7 +18,9 @@ class AnthropicChatProvider(ChatProvider):
 
         self.client = anthropic.Anthropic(**config)
 
-    def chat_completions_create(self, model, messages, tools=None, **kwargs):
+    def chat_completions_create(self, model, messages,
+                                tools: typing.Optional[SerializedTools] = None,
+                                **kwargs):
         # Check if the fist message is a system message
         if messages[0]["role"] == "system":
             system_message = messages[0]["content"]

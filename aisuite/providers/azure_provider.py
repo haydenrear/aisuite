@@ -1,9 +1,11 @@
+import typing
 import urllib.request
 import json
 import os
 
 from aisuite.framework.chat_provider import ChatProvider
 from aisuite.framework import ChatCompletionResponse
+from aisuite.framework.tool_utils import SerializedTools
 
 
 class AzureChatProvider(ChatProvider):
@@ -17,7 +19,7 @@ class AzureChatProvider(ChatProvider):
                 "For Azure, base_url is required. Check your deployment page for a URL like this - https://<model-deployment-name>.<region>.models.ai.azure.com"
             )
 
-    def chat_completions_create(self, model, messages, tools=None, **kwargs):
+    def chat_completions_create(self, model, messages, tools: typing.Optional[SerializedTools]=None, **kwargs):
         url = f"https://{model}.westus3.models.ai.azure.com/v1/chat/completions"
         url = f"https://{self.base_url}/chat/completions"
         if self.base_url:

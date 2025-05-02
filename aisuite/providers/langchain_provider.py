@@ -1,8 +1,11 @@
 import os
+import typing
+
 import httpx
 from aisuite.framework.chat_provider import ChatProvider
 from aisuite.provider import LLMError
 from aisuite.framework import ChatCompletionResponse
+from aisuite.framework.tool_utils import SerializedTools
 
 
 class LangchainChatProvider(ChatProvider):
@@ -22,7 +25,7 @@ class LangchainChatProvider(ChatProvider):
         # TODO
         pass
 
-    def chat_completions_create(self, model, messages, tools=None, **kwargs):
+    def chat_completions_create(self, model, messages, tools: typing.Optional[SerializedTools] = None, **kwargs):
         """
         Makes a request to the Inference API endpoint using httpx.
         """
