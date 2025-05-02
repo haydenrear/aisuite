@@ -1,3 +1,4 @@
+import abc
 from abc import ABC, abstractmethod
 
 from aisuite.framework.provider_interface import ProviderInterface, Provider
@@ -5,7 +6,7 @@ from aisuite.framework.provider_interface import ProviderInterface, Provider
 
 class ChatProvider(Provider, ABC):
     @abstractmethod
-    def chat_completions_create(self, model, messages):
+    def chat_completions_create(self, model, messages, tools, **kwargs):
         """Abstract method for chat completion calls, to be implemented by each provider."""
         pass
 
@@ -15,7 +16,7 @@ class ChatProviderInterface(ProviderInterface):
     """Defines the expected behavior for provider-specific interfaces."""
 
     from aisuite.framework.chat_completion_response import ChatCompletionResponse
-    def chat_completion_create(self, messages=None, model=None, temperature=DEFAULT_TEMPERATURE) -> ChatCompletionResponse:
+    def chat_completion_create(self, messages=None, model=None, tools=None, temperature=DEFAULT_TEMPERATURE, **kwargs) -> ChatCompletionResponse:
         """Create a chat completion using the specified messages, model, and temperature.
 
         This method must be implemented by subclasses to perform completions.

@@ -19,7 +19,7 @@ class GroqChatProvider(ChatProvider):
             )
         self.client = groq.Groq(**config)
 
-    def chat_completions_create(self, model, messages, **kwargs):
+    def chat_completions_create(self, model, messages, tools=None, **kwargs):
         return self.client.chat.completions.create(
             model=model,
             messages=messages,

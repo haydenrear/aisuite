@@ -78,12 +78,12 @@ def test_vertex_interface():
 def test_convert_openai_to_vertex_ai():
     message_history = [{"role": "user", "content": "Hello!"}]
     result = convert_openai_to_google_ai(message_history)
-    assert isinstance(result[0], Content)
-    assert result[0].role == "user"
-    assert len(result[0].parts) == 1
-    assert isinstance(result[0].parts[0], Part)
-    assert result[0].parts[0].text == "Hello!"
-
+    assert isinstance(result, list), f"Was {result.__class__}"
+    assert isinstance(result[0], dict), f"Was {result[0].__class__}"
+    messages = [ {"role": "user", "parts": [{"text": "Hello!"}]}]
+    for i, r in enumerate(result):
+        m = messages[i]
+        assert m == r
 
 def test_transform_roles():
     interface = GoogleChatProvider()

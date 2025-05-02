@@ -30,8 +30,6 @@ def convert_openai_to_google_ai(messages):
     if len(messages) == 0:
         return []
 
-
-
     history = []
     for message in messages:
         role = message["role"]

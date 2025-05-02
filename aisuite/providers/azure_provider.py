@@ -17,7 +17,7 @@ class AzureChatProvider(ChatProvider):
                 "For Azure, base_url is required. Check your deployment page for a URL like this - https://<model-deployment-name>.<region>.models.ai.azure.com"
             )
 
-    def chat_completions_create(self, model, messages, **kwargs):
+    def chat_completions_create(self, model, messages, tools=None, **kwargs):
         url = f"https://{model}.westus3.models.ai.azure.com/v1/chat/completions"
         url = f"https://{self.base_url}/chat/completions"
         if self.base_url:

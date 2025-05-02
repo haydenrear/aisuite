@@ -1,8 +1,9 @@
 """The interface to Google's Vertex AI."""
 import os
+import typing
 
 import google.generativeai as genai
-from google.generativeai.types import text_types
+from google.generativeai.types import text_types, ToolsType
 
 from aisuite.framework.chat_provider import DEFAULT_TEMPERATURE, ChatProvider
 from aisuite.framework.embedding_provider import EmbeddingProviderInterface, DEFAULT_EMBEDDING_DIM
@@ -24,7 +25,7 @@ class GoogleGenAiProvider:
 class GooglegenaiChatProvider(GoogleGenAiProvider, ChatProvider):
 
     # TODO: could this return a function with closure containing the chat instead?
-    def chat_completions_create(self, model, messages, **kwargs):
+    def chat_completions_create(self, model, messages, tools=None, **kwargs):
         """Request chat completions from the Google AI API.
 
         Args:
@@ -53,9 +54,12 @@ class GooglegenaiChatProvider(GoogleGenAiProvider, ChatProvider):
         # Get the last message from the transformed messages
         last_message = transformed_messages[-1]["content"]
 
+        tool_call_converted = self.convert_to_tools_types(tools, **kwargs)
+
         # Create the GenerativeModel with the specified model and generation configuration
         model = genai.GenerativeModel(
-            model, generation_config=genai.GenerationConfig(temperature=temperature)
+            model, generation_config=genai.GenerationConfig(temperature=temperature),
+            tools=tool_call_converted
         )
 
         # Start a chat with the GenerativeModel and send the last message
@@ -65,6 +69,9 @@ class GooglegenaiChatProvider(GoogleGenAiProvider, ChatProvider):
         # Convert the response to the format expected by the OpenAI API
         return normalize_response(response)
 
+    def convert_to_tools_types(self, tools, **kwargs) -> typing.Optional[ToolsType]:
+        # TODO: finish this and other ones
+        return None
 
 class GooglegenaiEmbeddingProvider(GoogleGenAiProvider, EmbeddingProviderInterface):
 

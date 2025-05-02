@@ -19,5 +19,5 @@ class MistralChatProvider(ChatProvider):
             )
         self.client = Mistral(**config)
 
-    def chat_completions_create(self, model, messages, **kwargs):
+    def chat_completions_create(self, model, messages, tools=None, **kwargs):
         return self.client.chat.complete(model=model, messages=messages, **kwargs)

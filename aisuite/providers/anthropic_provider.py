@@ -15,7 +15,7 @@ class AnthropicChatProvider(ChatProvider):
 
         self.client = anthropic.Anthropic(**config)
 
-    def chat_completions_create(self, model, messages, **kwargs):
+    def chat_completions_create(self, model, messages, tools=None, **kwargs):
         # Check if the fist message is a system message
         if messages[0]["role"] == "system":
             system_message = messages[0]["content"]
@@ -30,8 +30,7 @@ class AnthropicChatProvider(ChatProvider):
         return self.normalize_response(
             self.client.messages.create(
                 model=model, system=system_message, messages=messages, **kwargs
-            )
-        )
+            ))
 
     def normalize_response(self, response):
         """Normalize the response from the Anthropic API to match OpenAI's response format."""

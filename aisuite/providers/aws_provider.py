@@ -52,7 +52,7 @@ class AwsChatProvider(ChatProvider):
         ][0]["text"]
         return norm_response
 
-    def chat_completions_create(self, model, messages, **kwargs):
+    def chat_completions_create(self, model, messages, tools=None, **kwargs):
         # Any exception raised by Anthropic will be returned to the caller.
         # Maybe we should catch them and raise a custom LLMError.
         # https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html

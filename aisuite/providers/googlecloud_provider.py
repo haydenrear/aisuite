@@ -34,7 +34,7 @@ class GoogleCloudProvider:
 class GooglecloudChatProvider(GoogleCloudProvider, ChatProvider):
 
     # TODO: could this return a function with closure containing the chat instead?
-    def chat_completions_create(self, model, messages, **kwargs):
+    def chat_completions_create(self, model, messages, tools=None, **kwargs):
         """Request chat completions from the Google AI API.
 
         Args:

@@ -26,7 +26,7 @@ class FireworksChatProvider(ChatProvider):
         # Optionally set a custom timeout (default to 30s)
         self.timeout = config.get("timeout", 30)
 
-    def chat_completions_create(self, model, messages, **kwargs):
+    def chat_completions_create(self, model, messages, tools=None, **kwargs):
         """
         Makes a request to the Fireworks AI chat completions endpoint using httpx.
         """
