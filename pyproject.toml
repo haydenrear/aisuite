@@ -42,3 +42,4 @@ build-backend = "hatchling.build"
 
 [tool.setuptools]
 packages = ["aisuite"]
+package-dir = {"" = "src"}
