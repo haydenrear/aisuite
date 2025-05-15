@@ -4,6 +4,7 @@ setup(
     name='aisuite',
     version='1.0.0',
     description='Python library',
+    author='Andrew Ng',
     packages=find_packages('src'),  # Set the 'src' directory as the base for package discovery
     package_dir={'': 'src'},  # Map the root package to the 'src' directory
     classifiers=[
