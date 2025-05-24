@@ -56,7 +56,7 @@ class GooglegenaiChatProvider(GoogleGenAiProvider, ChatProvider):
         # Get the last message from the transformed messages
         last_message = transformed_messages[-1]["content"]
 
-        tool_call_converted = self.convert_to_tools_types(tools, **kwargs)
+        tool_call_converted = self.convert_to_tools_types(tools)
 
         # Create the GenerativeModel with the specified model and generation configuration
         model = genai.GenerativeModel(
@@ -71,9 +71,27 @@ class GooglegenaiChatProvider(GoogleGenAiProvider, ChatProvider):
         # Convert the response to the format expected by the OpenAI API
         return normalize_response(response)
 
-    def convert_to_tools_types(self, tools, **kwargs) -> typing.Optional[ToolsType]:
-        # TODO: finish this and other ones
-        return None
+    def convert_to_tools_types(self, tools) -> typing.Optional[ToolsType]:
+        if not tools:
+            return None
+
+        tool_types = []
+        for tool in tools:
+            tool_types.append(
+                {
+                    "function_declarations": [
+                        {
+                            "name": tool["name"],
+                            "description": tool["description"],
+                            "parameters": {
+                                "type": "OBJECT",
+                                "properties": tool["args"],
+                            },
+                        }
+                    ]
+                }
+            )
+        return tool_types
 
 class GooglegenaiEmbeddingProvider(GoogleGenAiProvider, EmbeddingProviderInterface):
 

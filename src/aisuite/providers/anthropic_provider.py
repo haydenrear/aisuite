@@ -32,6 +32,10 @@ class AnthropicChatProvider(ChatProvider):
         if "max_tokens" not in kwargs:
             kwargs["max_tokens"] = DEFAULT_MAX_TOKENS
 
+        if tools:
+            anthropic_tools = self._convert_to_anthropic_tools(tools)
+            kwargs["tools"] = anthropic_tools
+
         return self.normalize_response(
             self.client.messages.create(
                 model=model, system=system_message, messages=messages, **kwargs
@@ -42,3 +46,20 @@ class AnthropicChatProvider(ChatProvider):
         normalized_response = ChatCompletionResponse()
         normalized_response.choices[0].message.content = response.content[0].text
         return normalized_response
+
+    def _convert_to_anthropic_tools(self, tools):
+        """
+        Convert the unified tool format to the format that Anthropic expects.
+        """
+        if not tools:
+            return None
+
+        anthropic_tools = []
+        for tool in tools:
+            anthropic_tool = {
+                "name": tool["name"],
+                "description": tool["description"],
+                "input_schema": tool["args"],  # Assuming 'args' contains the input schema
+            }
+            anthropic_tools.append(anthropic_tool)
+        return anthropic_tools
