@@ -43,6 +43,10 @@ class FireworksChatProvider(ChatProvider):
             "messages": messages,
             **kwargs,  # Pass any additional arguments to the API
         }
+        
+        # Add tools to the request if provided
+        if tools:
+            data["tools"] = tools
 
         try:
             # Make the request to Fireworks AI endpoint.
@@ -63,7 +67,22 @@ class FireworksChatProvider(ChatProvider):
         Normalize the response to a common format (ChatCompletionResponse).
         """
         normalized_response = ChatCompletionResponse()
-        normalized_response.choices[0].message.content = response_data["choices"][0][
-            "message"
-        ]["content"]
+        response_choice = response_data["choices"][0]
+        response_message = response_choice["message"]
+        
+        # Extract content
+        normalized_response.choices[0].message.content = response_message["content"]
+        
+        # Extract tool_calls if present
+        if "tool_calls" in response_message:
+            normalized_response.choices[0].message.tool_calls = response_message["tool_calls"]
+            normalized_response.choices[0].finish_reason = "tool_calls"
+        
+        # Extract function_call if present (legacy format)
+        elif "function_call" in response_message:
+            normalized_response.choices[0].message.function_call = response_message["function_call"]
+            normalized_response.choices[0].finish_reason = "function_call"
+        else:
+            normalized_response.choices[0].finish_reason = response_choice.get("finish_reason", "stop")
+            
         return normalized_response

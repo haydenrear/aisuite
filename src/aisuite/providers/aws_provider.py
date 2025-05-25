@@ -47,12 +47,33 @@ class AwsChatProvider(ChatProvider):
         ]
 
     def normalize_response(self, response):
-        """Normalize the response from the Bedrock API to match OpenAI's response format."""
-        norm_response = ChatCompletionResponse()
-        norm_response.choices[0].message.content = response["output"]["message"][
-            "content"
-        ][0]["text"]
-        return norm_response
+            """Normalize the response from the Bedrock API to match OpenAI's response format."""
+            norm_response = ChatCompletionResponse()
+        
+            # Extract the message content
+            content = response["output"]["message"]["content"][0]["text"]
+            norm_response.choices[0].message.content = content
+        
+            # Check if tool calls are present in the response
+            if "toolUse" in response["output"]["message"]:
+                tool_uses = response["output"]["message"]["toolUse"]
+                tool_calls = []
+            
+                for i, tool_use in enumerate(tool_uses):
+                    tool_calls.append({
+                        "id": f"call_{i}",
+                        "type": "function",
+                        "function": {
+                            "name": tool_use["toolName"],
+                            "arguments": tool_use["input"]
+                        }
+                    })
+            
+                if tool_calls:
+                    norm_response.choices[0].message.tool_calls = tool_calls
+                    norm_response.choices[0].finish_reason = "tool_calls"
+        
+            return norm_response
 
     def chat_completions_create(self, model, messages, tools: typing.Optional[SerializedTools]=None, **kwargs):
         # Any exception raised by Anthropic will be returned to the caller.
@@ -83,13 +104,37 @@ class AwsChatProvider(ChatProvider):
                 inference_config[key] = value
             else:
                 additional_model_request_fields[key] = value
+                
+        # Format tools for AWS Bedrock if provided
+        bedrock_tools = None
+        if tools:
+            bedrock_tools = []
+            for tool in tools:
+                bedrock_tool = {
+                    "name": tool["name"],
+                    "description": tool["description"],
+                    "inputSchema": {
+                        "json": {
+                            "type": "object",
+                            "properties": tool["args"],
+                            "required": [k for k, v in tool["args"].items() if v.get("required", False)]
+                        }
+                    }
+                }
+                bedrock_tools.append(bedrock_tool)
 
         # Call the Bedrock Converse API.
-        response = self.client.converse(
-            modelId=model,  # baseModelId or provisionedModelArn
-            messages=formatted_messages,
-            system=system_message,
-            inferenceConfig=inference_config,
-            additionalModelRequestFields=additional_model_request_fields,
-        )
+        api_params = {
+            "modelId": model,  # baseModelId or provisionedModelArn
+            "messages": formatted_messages,
+            "system": system_message,
+            "inferenceConfig": inference_config,
+            "additionalModelRequestFields": additional_model_request_fields,
+        }
+        
+        # Add tools to the request if they're provided
+        if bedrock_tools:
+            api_params["tools"] = bedrock_tools
+        
+        response = self.client.converse(**api_params)
         return self.normalize_response(response)

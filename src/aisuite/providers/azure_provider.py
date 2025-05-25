@@ -28,6 +28,10 @@ class AzureChatProvider(ChatProvider):
         # Remove 'stream' from kwargs if present
         kwargs.pop("stream", None)
         data = {"messages": messages, **kwargs}
+        
+        # Add tools to the request if provided
+        if tools:
+            data["tools"] = tools
 
         body = json.dumps(data).encode("utf-8")
         headers = {"Content-Type": "application/json", "Authorization": self.api_key}
@@ -38,10 +42,19 @@ class AzureChatProvider(ChatProvider):
                 result = response.read()
                 resp_json = json.loads(result)
                 completion_response = ChatCompletionResponse()
-                # TODO: Add checks for fields being present in resp_json.
-                completion_response.choices[0].message.content = resp_json["choices"][
-                    0
-                ]["message"]["content"]
+                # Extract basic message content
+                completion_response.choices[0].message.content = resp_json["choices"][0]["message"]["content"]
+                
+                # Check for and extract tool calls if present
+                if "tool_calls" in resp_json["choices"][0]["message"]:
+                    completion_response.choices[0].message.tool_calls = resp_json["choices"][0]["message"]["tool_calls"]
+                    completion_response.choices[0].finish_reason = "tool_calls"
+                
+                # Check for and extract function call if present (legacy format)
+                elif "function_call" in resp_json["choices"][0]["message"]:
+                    completion_response.choices[0].message.function_call = resp_json["choices"][0]["message"]["function_call"]
+                    completion_response.choices[0].finish_reason = "function_call"
+                
                 return completion_response
 
         except urllib.error.HTTPError as error:
