@@ -1,16 +1,14 @@
-import os
-import typing
 import json
+import typing
 
-import httpx
-from aisuite.framework.chat_provider import ChatProvider, DEFAULT_TEMPERATURE
-from aisuite.provider import LLMError
-from aisuite.framework import ChatCompletionResponse
-from aisuite.framework.tool_utils import SerializedTools
-from langchain.chat_models import ChatOpenAI
 from langchain.schema import HumanMessage, AIMessage, SystemMessage, FunctionMessage
-from langchain.tools import Tool, StructuredTool
-from langchain.callbacks.base import BaseCallbackHandler
+from langchain.tools import StructuredTool
+from langchain_ollama import ChatOllama, OllamaLLM
+
+from aisuite.framework import ChatCompletionResponse
+from aisuite.framework.chat_provider import ChatProvider, DEFAULT_TEMPERATURE
+from aisuite.framework.tool_utils import SerializedTools
+from aisuite.provider import LLMError
 
 
 class LangchainChatProvider(ChatProvider):
@@ -24,11 +22,6 @@ class LangchainChatProvider(ChatProvider):
         Initialize the provider with the given configuration.
         The token is fetched from the config or environment variables.
         """
-        self.api_key = config.get("api_key") or os.getenv("OPENAI_API_KEY")
-        if not self.api_key:
-            raise EnvironmentError("API Key not provided for Langchain provider.")
-        
-        # Other optional configurations
         self.base_url = config.get("base_url")
         self.timeout = config.get("timeout", 60)
         self.max_retries = config.get("max_retries", 3)
@@ -57,27 +50,22 @@ class LangchainChatProvider(ChatProvider):
         model_name = model or self.default_model
         if not model_name:
             raise LLMError("No model specified for Langchain provider")
-        
+
         # Get or create the model instance
         if model_name not in self.model_instances:
-            # Create the ChatOpenAI instance with the specified model and configuration
-            chat_model = ChatOpenAI(
-                model_name=model_name,
-                temperature=temperature,
-                openai_api_key=self.api_key,
-                max_retries=self.max_retries,
-                request_timeout=self.timeout
-            )
-            
-            if self.base_url:
-                chat_model.openai_api_base = self.base_url
-                
+            if model.startswith('ollama_text://'):
+                chat_model = OllamaLLM(model = model_name.replace("ollama_text://ollama_text/", ""))
+            if model.startswith('ollama_chat://'):
+                chat_model = ChatOllama(model = model_name.replace("ollama_chat://ollama_chat/", ""))
+            else:
+                raise ValueError(f"Could not retrieve chat model for {chat_model}")
+
             self.model_instances[model_name] = chat_model
         else:
             chat_model = self.model_instances[model_name]
             # Update temperature if different from cached instance
-            if chat_model.temperature != temperature:
-                chat_model.temperature = temperature
+            # if chat_model.temperature != temperature:
+            #     chat_model.temperature = temperature
         
         # Convert messages to Langchain's format
         langchain_messages = []
@@ -90,20 +78,8 @@ class LangchainChatProvider(ChatProvider):
             elif role == "user":
                 langchain_messages.append(HumanMessage(content=content))
             elif role == "assistant":
-                # Handle function call in assistant messages
-                if "function_call" in message:
-                    function_call = message["function_call"]
-                    msg = AIMessage(content=content)
-                    msg.additional_kwargs["function_call"] = function_call
-                    langchain_messages.append(msg)
-                else:
-                    langchain_messages.append(AIMessage(content=content))
-            elif role == "function":
-                langchain_messages.append(FunctionMessage(
-                    name=message.get("name", ""),
-                    content=content
-                ))
-        
+                langchain_messages.append(AIMessage(content=content))
+
         # Handle tools if provided
         if tools:
             langchain_tools = []

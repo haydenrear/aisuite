@@ -46,8 +46,7 @@ class ProviderFactory:
             module = importlib.import_module(module_path)
         except ImportError as e:
             raise ImportError(
-                f"Could not import module {module_path}: {str(e)}. Please ensure the provider is supported by doing ProviderFactory.get_supported_providers()"
-            )
+                f"Could not import module {module_path}: {str(e)}. Please ensure the provider is supported by doing ProviderFactory.get_supported_providers()")
         except Exception as o:
             raise Exception(f"Could not import module for some other reason {str(o)}")
 
